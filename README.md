@@ -92,6 +92,22 @@ The API will be available at http://localhost:8000
 - `GET /loadedpdfs` - List loaded documents
 - `GET /health` - Health check endpoint
 
+### Using the Streamlit Web Interface
+
+For a more user-friendly experience, you can run the Streamlit web interface:
+
+```bash
+streamlit run frontend.py
+```
+
+This will start a web server and automatically open your default browser to the application interface. If it doesn't open automatically, you can access it at http://localhost:8501
+
+The web interface provides:
+- Document upload capabilities
+- Interactive query interface
+- Visualization of results
+- Document metadata exploration
+
 ### API Documentation
 
 When running, API documentation is available at:
@@ -128,11 +144,3 @@ Documents are processed using a hybrid chunking strategy that balances context r
 ├── pdfs/                  # Directory for document storage
 └── test_chroma_db/        # Vector database storage
 ```
-
-## License
-
-[Specify your license here]
-
-## Contributing
-
-[Guidelines for contributing to the project]
