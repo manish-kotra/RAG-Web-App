@@ -19,6 +19,10 @@ A Retrieval Augmented Generation (RAG) application that allows you to ask questi
 - **Embeddings**: HuggingFace GIST-large-Embedding-v0
 - **Document Processing**: Docling for PDF processing and chunking
 
+## Deployment
+
+For **Streamlit Cloud deployment**, a separate `streamlit_app.py` file is provided that combines both frontend and backend functionality into a single Streamlit application.
+
 ## Setup
 
 ### Prerequisites
