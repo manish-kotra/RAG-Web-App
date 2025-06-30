@@ -1,9 +1,13 @@
 import os
 import uvicorn
 from typing import Dict, Any, Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from textRAG import textRAG
+import tempfile
+import shutil
+from pathlib import Path
 
 app = FastAPI(
     title="RAG API",
@@ -11,9 +15,18 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def startup_db_client():
-    app.rag_pipeline = textRAG(folder_path="pdfs")
+    app.rag_pipeline = textRAG(folder_path="pdfs", resume_file="ManishKumarResume.pdf")
 
 # Query model
 class QueryRequest(BaseModel):
@@ -33,6 +46,11 @@ class QueryResponse(BaseModel):
 class DocumentsResponse(BaseModel):
     message: str
     document_count: int
+
+class UploadResponse(BaseModel):
+    message: str
+    filename: str
+    success: bool
 
 class ListResponse(BaseModel):
     documents: list
@@ -57,6 +75,34 @@ async def loaded_pdfs():
     try:
         documents = app.rag_pipeline.find_documents()
         return ListResponse(documents=documents)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/upload", response_model=UploadResponse)
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+        
+        # Read file content
+        file_content = await file.read()
+        
+        # Add to RAG pipeline as temporary document
+        temp_path = app.rag_pipeline.add_temporary_document(file_content, file.filename)
+        
+        return UploadResponse(
+            message=f"File {file.filename} uploaded and indexed successfully",
+            filename=file.filename,
+            success=True
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/cleanup-session")
+async def cleanup_session():
+    try:
+        app.rag_pipeline.cleanup_session_documents()
+        return {"message": "Session documents cleaned up successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     

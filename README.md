@@ -1,146 +1,148 @@
-# RAG Web Application
+# RAG Document Assistant 📚
 
-A Retrieval Augmented Generation (RAG) application that uses LangChain, Chroma vector database, and Google's Gemini model to provide accurate responses based on your document collection.
+A Retrieval Augmented Generation (RAG) application that allows you to ask questions about documents. The system includes ManishKumar's resume as a permanent document and supports uploading additional PDFs for temporary use during your session.
 
-## Overview
+## Features
 
-This application enables you to:
-- Index PDF and text documents into a vector database
-- Query your documents using natural language
-- Get AI-generated responses based on the content of your documents
-- Access the functionality through both an API and a web interface
+- **Permanent Resume**: ManishKumar's resume is always available in the vector database
+- **Temporary Upload**: Upload additional PDFs for your current session
+- **Auto Cleanup**: Session documents are automatically removed when the session ends
+- **Smart Q&A**: Ask questions about any loaded document using Google Gemini
+- **Web Interface**: User-friendly Streamlit frontend
+- **API Backend**: FastAPI backend for document processing
 
 ## Architecture
 
-The application consists of three main components:
+- **Backend**: FastAPI with ChromaDB for vector storage
+- **Frontend**: Streamlit web interface
+- **AI Model**: Google Gemini 2.0 Flash for text generation
+- **Embeddings**: HuggingFace GIST-large-Embedding-v0
+- **Document Processing**: Docling for PDF processing and chunking
 
-1. **textRAG.py**: Core RAG implementation using LangChain
-   - Document processing and chunking
-   - Vector embeddings generation
-   - Vector database management
-   - Retrieval and generation pipeline
-
-2. **api.py**: FastAPI-based REST API
-   - Query endpoint
-   - Document upload functionality
-   - Health check endpoint
-
-3. **frontend.py**: Web interface (optional)
-   - User-friendly interface for querying documents
-
-## Installation
+## Setup
 
 ### Prerequisites
 
 - Python 3.8+
-- pip (Python package installer)
+- Google API Key (for Gemini)
 
-### Setup
+### Installation
 
-1. Clone the repository:
+1. **Clone and navigate to the project**:
    ```bash
-   git clone https://github.com/manish-kotra/RAG-Web-App.git
-   cd RAG-Web-App
+   cd d:\Project\RAG
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Create a `.env` file with your API keys:
+3. **Set up environment variables**:
+   Create a `.env` file in the project root:
+   ```env
+   GOOGLE_API_KEY=your_google_api_key_here
+   LANGSMITH_API_KEY=your_langsmith_api_key_here  # Optional
    ```
-   GOOGLE_API_KEY=your_google_api_key
-   LANGSMITH_API_KEY=your_langsmith_api_key
+
+4. **Ensure the resume file exists**:
+   Make sure `ManishKumarResume.pdf` is in the `pdfs/` folder
+
+## Running the Application
+
+### Option 1: Using the startup script (Recommended)
+```bash
+python run_app.py
+```
+
+### Option 2: Using the batch file (Windows)
+```cmd
+start.bat
+```
+
+### Option 3: Manual startup
+
+1. **Start the API server**:
+   ```bash
+   uvicorn api:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+2. **Start the Streamlit frontend** (in another terminal):
+   ```bash
+   streamlit run frontend.py
    ```
 
 ## Usage
 
-### Preparing Your Documents
+1. **Access the application**:
+   - Frontend: http://localhost:8501
+   - API Documentation: http://localhost:8000/docs
 
-1. Place your PDF or text documents in the `pdfs/` directory.
+2. **Ask questions about the resume**:
+   - The system always has access to ManishKumar's resume
+   - Ask questions like "What is ManishKumar's experience in Python?"
 
-### Using the Command-line Interface
+3. **Upload additional documents**:
+   - Use the sidebar to upload PDF files
+   - These files are processed and added to the current session
+   - Ask questions about the uploaded content
 
-Run the RAG application directly:
+4. **Session management**:
+   - Uploaded documents are automatically removed when the session ends
+   - Use the "Clear Session Documents" button to manually clean up
+   - The resume file remains permanently available
 
-```bash
-python textRAG.py
+## API Endpoints
+
+- `GET /health` - Health check
+- `POST /query` - Ask questions about documents
+- `POST /upload` - Upload a PDF for the current session
+- `POST /cleanup-session` - Clean up session documents
+- `GET /loadedpdfs` - List available documents
+
+## File Structure
+
+```
+d:\Project\RAG\
+├── api.py              # FastAPI backend
+├── frontend.py         # Streamlit frontend
+├── textRAG.py         # Core RAG implementation
+├── run_app.py         # Startup script
+├── start.bat          # Windows batch file
+├── requirements.txt   # Python dependencies
+├── README.md          # Documentation
+├── .env              # Environment variables (create this)
+├── pdfs/             # PDF storage
+│   └── ManishKumarResume.pdf
+└── test_chroma_db/   # Vector database storage
 ```
 
-You'll be prompted to index new documents or use the existing vector store. Then you can query your documents interactively.
+## Troubleshooting
 
-### Using the API
-
-Start the API server:
-
-```bash
-python api.py
-```
-
-The API will be available at http://localhost:8000
-
-#### API Endpoints:
-
-- `POST /query` - Query your documents
-  ```json
-  {
-    "query": "What does the document say about..."
-  }
-  ```
-
-- `GET /loadedpdfs` - List loaded documents
-- `GET /health` - Health check endpoint
-
-### Using the Streamlit Web Interface
-
-For a more user-friendly experience, you can run the Streamlit web interface:
-
-```bash
-streamlit run frontend.py
-```
-
-This will start a web server and automatically open your default browser to the application interface. If it doesn't open automatically, you can access it at http://localhost:8501
-
-The web interface provides:
-- Document upload capabilities
-- Interactive query interface
-- Visualization of results
-- Document metadata exploration
-
-### API Documentation
-
-When running, API documentation is available at:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-## Technical Details
-
-### Vector Store
-
-The application uses Chroma DB for the vector database, stored in the `test_chroma_db/` directory.
-
-### Embedding Model
-
-Documents are embedded using the "GIST-large-Embedding-v0" model from Hugging Face.
-
-### LLM
-
-The application uses Google's Gemini model for response generation.
-
-### Chunking Strategy
-
-Documents are processed using a hybrid chunking strategy that balances context retention and chunk size.
+1. **API not starting**: Check if port 8000 is available
+2. **Streamlit not starting**: Check if port 8501 is available
+3. **Missing resume**: Ensure `ManishKumarResume.pdf` is in the `pdfs/` folder
+4. **Upload failures**: Check file size and ensure it's a valid PDF
+5. **Google API errors**: Verify your `GOOGLE_API_KEY` in the `.env` file
 
 ## Development
 
-### Project Structure
+To extend the application:
 
-```
-├── api.py                 # FastAPI implementation
-├── textRAG.py             # Core RAG implementation
-├── frontend.py            # Web interface
-├── requirements.txt       # Python dependencies
-├── pdfs/                  # Directory for document storage
-└── test_chroma_db/        # Vector database storage
-```
+1. **Add new document types**: Modify the file upload validation in `api.py`
+2. **Change embedding models**: Update the model in `textRAG.py`
+3. **Customize UI**: Modify the Streamlit interface in `frontend.py`
+4. **Add new endpoints**: Extend the FastAPI routes in `api.py`
+
+## Dependencies
+
+Key dependencies include:
+- `fastapi` - Web API framework
+- `streamlit` - Web interface
+- `langchain` - LLM framework
+- `chromadb` - Vector database
+- `transformers` - HuggingFace models
+- `docling` - Document processing
+- `google-generativeai` - Google Gemini integration
+
+See `requirements.txt` for the complete list.
